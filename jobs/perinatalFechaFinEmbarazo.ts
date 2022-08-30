@@ -32,18 +32,14 @@ export async function actualizarRegistro(registroPer: any) {
     const documento = registroPer.paciente.documento;
     if (documento) {
         const resultSP = await getPacienteSP({ documento });
-
         const pacienteSP = resultSP ? resultSP.paciente : null;
-
         if (pacienteSP && registroPer.embarazo && pacienteSP['pregnancies']) {
-
-
-            // eslint-disable-next-line no-console
-            console.log(JSON.stringify(registroPer));
-
-            const numGesta = getNumGesta(registroPer.embarazo);
-
-
+            let numGesta = null;
+            if (registroPer.embarazo.conceptId === '127374005' ) {
+                numGesta = (registroPer.numeroEmbarazo) ? registroPer.numeroEmbarazo : null;
+            } else {
+                numGesta = getNumGesta(registroPer.embarazo);
+            }
             const embarazoSP = numGesta ? pacienteSP['pregnancies'][numGesta.toString()] : null;
 
             if (embarazoSP) {
