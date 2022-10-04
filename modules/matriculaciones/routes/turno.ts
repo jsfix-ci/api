@@ -4,6 +4,7 @@ import { Profesional } from '../../../core/tm/schemas/profesional';
 import * as turno from '../schemas/turno';
 import { turnoSolicitado } from '../schemas/turnoSolicitado';
 import { userScheduler } from '../../../config.private';
+import moment = require('moment');
 const router = express.Router();
 
 router.patch('/turnos/save/:turnoId', Auth.authenticate(), async (request, response, next) => {
@@ -110,22 +111,36 @@ router.get('/turnos/proximos/?', Auth.authenticate(), (request: any, response, e
     };
 
     let fechaConsulta;
+    let desde;
+    let hasta;
+
     if (request.query.fecha) {
         fechaConsulta = new Date(request.query.fecha);
         fechaConsulta.setHours(0);
         fechaConsulta.setMinutes(0);
         fechaConsulta.setMilliseconds(0);
-
+        desde = moment(fechaConsulta).startOf('day').toDate();
+        hasta = moment(fechaConsulta).endOf('day').toDate();
     } else {
         const hoy = new Date();
         const fechaActualMargen = hoy.setMinutes(hoy.getMinutes() - 30);
         fechaConsulta = fechaActualMargen;
     }
-
-    const busquedaTurno = {
-        fecha: { $gte: fechaConsulta }
-
-    };
+    let busquedaTurno;
+    if (request.query.delDia && desde && hasta) {
+        busquedaTurno = {
+            fecha: {
+                $gte: desde,
+                $lte: hasta
+            }
+        };
+    } else {
+        busquedaTurno = {
+            fecha: {
+                $gte: desde || fechaConsulta
+            }
+        };
+    }
     busquedaTurno['anulado'] = { $exists: false };
     if (request.query.nombre || request.query.apellido || request.query.documento) {
 
