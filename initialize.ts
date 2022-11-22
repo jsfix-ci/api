@@ -151,7 +151,7 @@ export function initAPI(app: Express) {
             // Parse err
             let e: Error;
             if (!isNaN(err)) {
-                e = new Error(HttpStatus.getStatusText(err));
+                e = new Error((err === 500 ? 'Server Error' : HttpStatus.getStatusText(err)));
                 (e as any).status = err;
                 err = e;
             } else {
